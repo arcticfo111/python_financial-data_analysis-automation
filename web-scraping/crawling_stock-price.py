@@ -1,8 +1,8 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import requests
-from datetime import datetime
-from matplotlib import dates as mdates
+import mplfinance as mpf
 from bs4 import BeautifulSoup as bs
 
 # 셀트리온 주가 정보 가져오기, 1~3 페이지까지 
@@ -38,4 +38,17 @@ plt.xticks(rotation=45)
 # co는 좌표를 청록색 원으로, -는 각 좌표를 실선으로 표현
 plt.plot(dataframe_celltrion['날짜'], dataframe_celltrion['종가'], 'co-')
 plt.grid(color='gray', linestyle='--')
-plt.show()
+# plt.show()
+
+# 캔들차트로 시각화 하기
+# candlestick_dataframe_celltrion()에서 요구하는 형식으로 변경
+ohlc = dataframe_celltrion[['날짜','시가','고가','저가','종가']]
+ohlc = ohlc.rename(columns = {'날짜' : 'Date', '시가' : 'Open', '고가' : 'High', '저가' : 'Low', '종가' : 'Close'})
+ohlc = ohlc.sort_values(by = 'Date')
+ohlc.index = pd.to_datetime(ohlc.Date)
+ohlc = ohlc[['Open', 'High', 'Low', 'Close']]
+
+keywords_arguments = dict(title = 'Celltrion candle chart', type='candle')
+mc = mpf.make_marketcolors(up='r', down='b', inherit=True)
+s  = mpf.make_mpf_style(marketcolors = mc)
+mpf.plot(ohlc, **keywords_arguments, style=s)
